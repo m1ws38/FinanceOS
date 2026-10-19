@@ -9,6 +9,11 @@ public class Transaction {
     private final LocalDateTime createdAt;
     private final TransactionType type;
     public Transaction(int id, BigDecimal amount, String category, String description, TransactionType type) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "Сумма операции должна быть больше нуля!"
+            );
+        }
         this.id = id;
         this.amount = amount;
         this.category = category;

@@ -1,5 +1,7 @@
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 public class TransactionManager {
     private final ArrayList<Transaction> transactions = new ArrayList<>();
     public boolean addTransaction(Transaction transaction) {
@@ -29,12 +31,29 @@ public class TransactionManager {
         return balance;
     }
     public boolean removeTransaction(int id) {
-        for(int i=0;i<transactions.size();i++){
-            if(transactions.get(i).getId()==id){
-                transactions.remove(i);
-                return true;
-            }
+        Transaction found = findTransactionById(id);
+        if(found != null){
+            return transactions.remove(found);
         }
         return false;
+    }
+    public Transaction findTransactionById(int id) {
+        for(int i=0;i<transactions.size();i++){
+            if(transactions.get(i).getId() == id){
+                return transactions.get(i);
+            }
+        }
+        return null;
+    }
+    public HashMap<String, BigDecimal> getExpensesByCategory() {
+        HashMap<String, BigDecimal> expenses = new HashMap<>();
+        for(Transaction item : transactions){
+            if(item.getType()==TransactionType.EXPENSE){
+                BigDecimal oldAmount = expenses.getOrDefault(item.getCategory(), BigDecimal.ZERO);
+                BigDecimal newAmount = oldAmount.add(item.getAmount());
+                expenses.put(item.getCategory(),newAmount);
+            }
+        }
+        return expenses;
     }
 }
