@@ -6,39 +6,72 @@ public class Main {
     private static void addTransaction(
             Scanner sc,
             TransactionManager manager,
+            TransactionRepository repository,
             TransactionType type
     ) {
         try {
-            System.out.print("Введите id операции: ");
-            int id = sc.nextInt();
-            sc.nextLine();
+
             System.out.print("Введите сумму операции: ");
             BigDecimal amount = sc.nextBigDecimal();
             sc.nextLine();
-            System.out.print("Введите категорию операции: ");
-            String category = sc.nextLine();
-            System.out.print("Введите описание операции: ");
-            String description = sc.nextLine();
-            Transaction transaction = new Transaction(
-                    id, amount, category, description, type
-            );
-            boolean added = manager.addTransaction(transaction);
-            if (added) {
-                System.out.println("Операция успешно добавлена!");
-            } else {
-                System.out.println("Ошибка! Операция с таким ID уже существует.");
+            String category;
+
+            while (true) {
+                System.out.print("Введите категорию операции: ");
+                category = sc.nextLine().trim();
+
+                if (!category.isEmpty()) {
+                    break;
+                }
+
+                System.out.println("Ошибка: категория не может быть пустой!");
             }
-        } catch (InputMismatchException e) {
-            System.out.println("Ошибка! Некорректный формат числа.");
-            sc.nextLine();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Ошибка: " + e.getMessage());
+
+            System.out.print("Введите описание (необязательно): ");
+            String description = sc.nextLine().trim();
+            Transaction transaction = new Transaction(
+                    0, amount, category, description, type
+            );
+
+            int generatedId = repository.save(transaction);
+
+            if (generatedId > 0) {
+
+                Transaction savedTransaction = new Transaction(
+                        generatedId,
+                        transaction.getAmount(),
+                        transaction.getCategory(),
+                        transaction.getDescription(),
+                        transaction.getType(),
+                        transaction.getCreatedAt()
+                );
+
+                manager.addTransaction(savedTransaction);
+
+                System.out.println(
+                        "Операция успешно добавлена! ID: " + generatedId
+                );
+
+            } else {
+                System.out.println("Ошибка сохранения операции!");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     public static void main(String[] args) {
         int id;
         Scanner sc = new Scanner(System.in);
         TransactionManager manager = new TransactionManager();
+        DatabaseManager.initializeDatabase();
+
+        TransactionRepository repository = new TransactionRepository();
+
+        for (Transaction transaction : repository.findAll()) {
+            manager.addTransaction(transaction);
+        }
+
+        System.out.println("Данные из SQLite загружены!");
         while (true){
             int choice;
             System.out.println("""
@@ -66,11 +99,11 @@ public class Main {
             switch (choice){
                 case 1:
                     System.out.print("===Добавить доход===");
-                    addTransaction(sc, manager, TransactionType.INCOME);
+                    addTransaction(sc, manager, repository, TransactionType.INCOME);
                     break;
                 case 2:
                     System.out.print("===Добавить расход===");
-                    addTransaction(sc, manager, TransactionType.EXPENSE);
+                    addTransaction(sc, manager, repository, TransactionType.EXPENSE);
                     break;
                 case 3:
                     System.out.println("Показать все операции");
@@ -92,12 +125,10 @@ public class Main {
                     System.out.print("Введите ID");
                     try {
                         id = sc.nextInt();
-                        boolean del = manager.removeTransaction(id);
-                        if(del){
-                            System.out.println("Операция успешно удалена");
-                        }
-                        else{
-                            System.out.println("Операция с таким id не найдена");
+                        boolean del = repository.deleteById(id);
+
+                        if (del) {
+                            manager.removeTransaction(id);
                         }
                     } catch (InputMismatchException e) {
                         System.out.println("Ошибка! Введите целое число.");
