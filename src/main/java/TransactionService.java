@@ -24,23 +24,37 @@ public class TransactionService {
         return repository.deleteById(id) && manager.removeTransaction(id);
     }
 
+
     public Transaction addTransaction(
             BigDecimal amount,
             String category,
             String description,
             TransactionType type
     ) {
-        Transaction transaction = new Transaction(0,amount,category,description,type);
+        Transaction transaction = new Transaction(
+                0, amount, category, description, type
+        );
+
         int generatedId = repository.save(transaction);
+
         if (generatedId <= 0) {
             return null;
         }
-        Transaction savedTransaction = new Transaction(generatedId,transaction.getAmount(),transaction.getCategory(),transaction.getDescription(),
-                transaction.getType(),transaction.getCreatedAt());
+
+        Transaction savedTransaction = new Transaction(
+                generatedId,
+                transaction.getAmount(),
+                transaction.getCategory(),
+                transaction.getDescription(),
+                transaction.getType(),
+                transaction.getCreatedAt()
+        );
+
         manager.addTransaction(savedTransaction);
-        repository.save(savedTransaction);
+
         return savedTransaction;
     }
+
     public ArrayList<Transaction> getAllTransactions() {
         return manager.getTransactions();
     }
