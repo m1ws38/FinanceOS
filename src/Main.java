@@ -3,17 +3,17 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
+
     private static void addTransaction(
             Scanner sc,
-            TransactionManager manager,
-            TransactionRepository repository,
+            TransactionService service,
             TransactionType type
     ) {
         try {
-
             System.out.print("Введите сумму операции: ");
             BigDecimal amount = sc.nextBigDecimal();
             sc.nextLine();
+
             String category;
 
             while (true) {
@@ -29,36 +29,32 @@ public class Main {
 
             System.out.print("Введите описание (необязательно): ");
             String description = sc.nextLine().trim();
-            Transaction transaction = new Transaction(
-                    0, amount, category, description, type
+
+            Transaction savedTransaction = service.addTransaction(
+                    amount,
+                    category,
+                    description,
+                    type
             );
 
-            int generatedId = repository.save(transaction);
-
-            if (generatedId > 0) {
-
-                Transaction savedTransaction = new Transaction(
-                        generatedId,
-                        transaction.getAmount(),
-                        transaction.getCategory(),
-                        transaction.getDescription(),
-                        transaction.getType(),
-                        transaction.getCreatedAt()
-                );
-
-                manager.addTransaction(savedTransaction);
-
+            if (savedTransaction != null) {
                 System.out.println(
-                        "Операция успешно добавлена! ID: " + generatedId
+                        "Операция успешно добавлена! ID: "
+                                + savedTransaction.getId()
                 );
-
             } else {
-                System.out.println("Ошибка сохранения операции!");
+                System.out.println("Не удалось сохранить операцию!");
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+        } catch (InputMismatchException e) {
+            System.out.println("Ошибка! Введите корректную сумму.");
+            sc.nextLine();
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("Ошибка: " + e.getMessage());
         }
     }
+
     public static void main(String[] args) {
         int id;
         Scanner sc = new Scanner(System.in);
@@ -66,6 +62,11 @@ public class Main {
         DatabaseManager.initializeDatabase();
 
         TransactionRepository repository = new TransactionRepository();
+
+        TransactionService service = new TransactionService(
+                manager,
+                repository
+        );
 
         for (Transaction transaction : repository.findAll()) {
             manager.addTransaction(transaction);
@@ -99,15 +100,15 @@ public class Main {
             switch (choice){
                 case 1:
                     System.out.print("===Добавить доход===");
-                    addTransaction(sc, manager, repository, TransactionType.INCOME);
+                    addTransaction(sc, service, TransactionType.INCOME);
                     break;
                 case 2:
                     System.out.print("===Добавить расход===");
-                    addTransaction(sc, manager, repository, TransactionType.EXPENSE);
+                    addTransaction(sc, service, TransactionType.EXPENSE);
                     break;
                 case 3:
                     System.out.println("Показать все операции");
-                    for (Transaction item : manager.getTransactions()) {
+                    for (Transaction item : service.getAllTransactions()) {
                         System.out.println(
                                 "ID: " + item.getId()
                                         + " | " + item.getType()
@@ -118,21 +119,16 @@ public class Main {
                     break;
                 case 4:
                     System.out.print("Показать баланс");
-                    System.out.print(manager.getBalance());
+                    System.out.print(service.getBalance());
                     break;
                 case 5:
                     System.out.print("Удалить операцию\n");
                     System.out.print("Введите ID");
-                    try {
-                        id = sc.nextInt();
-                        boolean del = repository.deleteById(id);
-
-                        if (del) {
-                            manager.removeTransaction(id);
-                        }
-                    } catch (InputMismatchException e) {
-                        System.out.println("Ошибка! Введите целое число.");
-                        sc.nextLine();
+                    id = sc.nextInt();
+                    if (service.deleteTransaction(id)) {
+                        System.out.println("Операция успешно удалена!");
+                    } else {
+                        System.out.println("Не удалось удалить операцию!");
                     }
                     break;
                 case 6:
@@ -140,7 +136,7 @@ public class Main {
                     System.out.print("Введите ID");
                     try {
                         id = sc.nextInt();
-                        Transaction found = manager.findTransactionById(id);
+                        Transaction found = service.findTransactionById(id);
                         if (found != null) {
                             System.out.println("ID: " + found.getId());
                             System.out.println("Сумма: " + found.getAmount());
@@ -156,7 +152,7 @@ public class Main {
                     break;
                 case 7:
                     System.out.println("Статистика расходов");
-                    System.out.println(manager.getExpensesByCategory());
+                    System.out.println(service.getExpensesByCategory());
                     break;
                 case 0:
                     System.out.println("Выход");
