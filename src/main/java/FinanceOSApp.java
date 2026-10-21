@@ -21,29 +21,37 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.scene.image.Image;
 
 public class FinanceOSApp extends Application {
 
     @Override
     public void start(Stage stage) {
 
-        DatabaseManager.initializeDatabase();
-
         TransactionManager manager = new TransactionManager();
         TransactionRepository repository = new TransactionRepository();
 
-        for (Transaction transaction : repository.findAll()) {
-            manager.addTransaction(transaction);
+        try {
+            DatabaseManager.initializeDatabase();
 
-        }
-        System.out.println("===== ПРОВЕРКА ЗАГРУЗКИ =====");
+            for (Transaction transaction : repository.findAll()) {
+                manager.addTransaction(transaction);
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
 
-        for (Transaction transaction : manager.getTransactions()) {
-            System.out.println(
-                    "ID: " + transaction.getId()
-                            + " | Сумма: " + transaction.getAmount().toPlainString()
-                            + " | Тип: " + transaction.getType()
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setTitle("Ошибка запуска FinanceOS");
+            error.setHeaderText("Не удалось открыть данные приложения");
+            error.setContentText(
+                    "Не удалось создать или загрузить базу данных.\n"
+                            + "Проверьте доступ к папке:\n"
+                            + DatabaseManager.getDatabasePath().getParent()
             );
+            error.showAndWait();
+
+            javafx.application.Platform.exit();
+            return;
         }
 
         System.out.println(
@@ -330,6 +338,11 @@ public class FinanceOSApp extends Application {
 
         stage.setTitle("FinanceOS");
         stage.setScene(scene);
+        stage.getIcons().add(
+                new Image(
+                        FinanceOSApp.class.getResourceAsStream("/financeos.png")
+                )
+        );
         stage.show();
     }
 

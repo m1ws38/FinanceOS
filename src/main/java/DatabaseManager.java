@@ -46,7 +46,9 @@ public class DatabaseManager {
             System.out.println("Таблица transactions готова!");
 
         } catch (SQLException e) {
-            System.out.println("Ошибка создания таблицы: " + e.getMessage());
+            throw new IllegalStateException(
+                    "Не удалось подготовить базу данных", e
+            );
         }
     }
 
