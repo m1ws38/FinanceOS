@@ -15,6 +15,7 @@ public class TransactionDialog {
     private final TextField descriptionField = new TextField();
     private final GridPane grid = new GridPane();
     private final TransactionType type;
+    private boolean editing = false;
 
     public TransactionDialog(TransactionType type) {
         this.type = type;
@@ -36,17 +37,28 @@ public class TransactionDialog {
 
 
     }
+    public TransactionDialog(Transaction transaction){
+        this(transaction.getType());
+        editing = true;
+        amountField.setText(transaction.getAmount().toPlainString());
+        categoryField.setText(transaction.getCategory());
+        descriptionField.setText(transaction.getDescription());
+    }
     public Optional<TransactionFormData> show() {
         Dialog<ButtonType> dialog = new Dialog<>();
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: #ef4444;");
 
         dialog.setTitle("FinanceOS");
-        dialog.setHeaderText(
-                type == TransactionType.INCOME
-                        ? "Добавление дохода"
-                        : "Добавление расхода"
-        );
+        if (editing) {
+            dialog.setHeaderText("Редактирование операции");
+        } else {
+            dialog.setHeaderText(
+                    type == TransactionType.INCOME
+                            ? "Добавление дохода"
+                            : "Добавление расхода"
+            );
+        }
 
         dialog.getDialogPane().setContent(grid);
 

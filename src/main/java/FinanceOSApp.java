@@ -92,6 +92,48 @@ public class FinanceOSApp extends Application {
 
         transactionTable.setItems(sortedTransactions);
 
+        Button editButton = new Button("Редактировать");
+
+        editButton.setOnAction(event -> {
+            Transaction selected =
+                    transactionTable.getSelectionModel().getSelectedItem();
+
+            if (selected == null) {
+                return;
+            }
+
+            TransactionDialog dialog = new TransactionDialog(selected);
+
+            dialog.show().ifPresent(data -> {
+                Transaction updated = service.updateTransaction(
+                        selected.getId(),
+                        data.amount(),
+                        data.category(),
+                        data.description()
+                );
+
+                if (updated != null) {
+                    for (int i = 0; i < tableTransactions.size(); i++) {
+                        if (tableTransactions.get(i).getId() == updated.getId()) {
+                            tableTransactions.set(i, updated);
+                            break;
+                        }
+                    }
+
+                    balanceLabel.setText(
+                            "Текущий баланс: " + service.getBalance() + " ₽"
+                    );
+                } else {
+                    Alert error = new Alert(Alert.AlertType.ERROR);
+                    error.initOwner(stage);
+                    error.setTitle("Ошибка");
+                    error.setHeaderText("Не удалось изменить операцию");
+                    error.setContentText("Попробуйте ещё раз.");
+                    error.showAndWait();
+                }
+            });
+        });
+
         Button deleteButton = new Button("Удалить операцию");
 
         deleteButton.setOnAction(event -> {
@@ -280,6 +322,7 @@ public class FinanceOSApp extends Application {
                 addExpenseButton,
                 typeFilter,
                 transactionTable,
+                editButton,
                 deleteButton
         );
 
@@ -307,6 +350,7 @@ public class FinanceOSApp extends Application {
             );
 
             if (transaction != null) {
+                tableTransactions.add(transaction);
                 balanceLabel.setText(
                         "Текущий баланс: " + service.getBalance() + " ₽"
                 );
@@ -320,7 +364,7 @@ public class FinanceOSApp extends Application {
                 );
                 error.showAndWait();
             }
-            tableTransactions.add(transaction);
+
         });
     }
 

@@ -56,6 +56,25 @@ public class TransactionRepository {
             return false;
         }
     }
+    public boolean update(Transaction transaction) {
+        String sql = """
+            UPDATE transactions
+            SET amount = ?, category = ?, description = ?
+            WHERE id = ?
+            """;
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, transaction.getAmount().toPlainString());
+            statement.setString(2, transaction.getCategory());
+            statement.setString(3, transaction.getDescription());
+            statement.setInt(4, transaction.getId());
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            System.out.println("Ошибка обновления: " + e.getMessage());
+            return false;
+        }
+    }
+
     public ArrayList<Transaction> findAll() {
 
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -100,4 +119,6 @@ public class TransactionRepository {
 
         return transactions;
     }
+
+
 }

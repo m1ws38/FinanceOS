@@ -54,6 +54,43 @@ public class TransactionService {
 
         return savedTransaction;
     }
+    public Transaction updateTransaction(
+            int id,
+            BigDecimal amount,
+            String category,
+            String description
+    ) {
+        // Находим старую операцию в памяти.
+        Transaction existing = manager.findTransactionById(id);
+
+        // Если такой операции нет, обновлять нечего.
+        if (existing == null) {
+            return null;
+        }
+
+        // Создаём исправленную версию операции.
+        Transaction updated = new Transaction(
+                existing.getId(),
+                amount,
+                category,
+                description,
+                existing.getType(),
+                existing.getCreatedAt()
+        );
+
+        // Сначала сохраняем изменения в базе.
+        boolean saved = repository.update(updated);
+
+        if (!saved) {
+            return null;
+        }
+
+        // После успешного сохранения обновляем память.
+        manager.updateTransaction(updated);
+
+        // Возвращаем исправленную операцию.
+        return updated;
+    }
 
     public ArrayList<Transaction> getAllTransactions() {
         return manager.getTransactions();

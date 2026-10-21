@@ -45,6 +45,15 @@ public class TransactionManager {
         }
         return null;
     }
+    public boolean updateTransaction(Transaction updatedTransaction) {
+        for(int i=0;i<transactions.size();i++){
+            if (transactions.get(i).getId() == updatedTransaction.getId()){
+                transactions.set(i,updatedTransaction);
+                return true;
+            }
+        }
+        return false;
+    }
     public HashMap<String, BigDecimal> getExpensesByCategory() {
         HashMap<String, BigDecimal> expenses = new HashMap<>();
         for(Transaction item : transactions){

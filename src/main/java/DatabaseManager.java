@@ -2,11 +2,27 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.file.Files;
+import java.io.IOException;
+import java.nio.file.Path;
 
 public class DatabaseManager {
+    public static Path getDatabasePath() {
+        String localAppData = System.getenv("LOCALAPPDATA");
+
+        return Path.of(localAppData, "FinanceOS", "financeos.db");
+    }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:financeos.db");
+        Path databasePath = getDatabasePath();
+
+        try {
+            Files.createDirectories(databasePath.getParent());
+        } catch (IOException e) {
+            throw new SQLException("Не удалось создать папку для базы данных", e);
+        }
+
+        return DriverManager.getConnection("jdbc:sqlite:" + databasePath);
     }
 
     public static void initializeDatabase() {
@@ -33,4 +49,5 @@ public class DatabaseManager {
             System.out.println("Ошибка создания таблицы: " + e.getMessage());
         }
     }
+
 }
