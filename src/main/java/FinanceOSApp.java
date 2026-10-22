@@ -22,6 +22,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.image.Image;
+import javafx.scene.control.DatePicker;
+import java.time.LocalDate;
 
 public class FinanceOSApp extends Application {
 
@@ -54,13 +56,7 @@ public class FinanceOSApp extends Application {
             return;
         }
 
-        System.out.println(
-                "Всего операций: " + manager.getTransactions().size()
-        );
         TransactionService service = new TransactionService(manager, repository);
-        System.out.println(
-                "[START] Баланс: " + service.getBalance().toPlainString()
-        );
 
 
         Label title = new Label("FinanceOS");
@@ -292,7 +288,30 @@ public class FinanceOSApp extends Application {
 
         typeFilter.setValue("Все операции");
 
+        DatePicker fromDatePicker = new DatePicker();
+        fromDatePicker.setPromptText("С даты");
+
+        DatePicker toDatePicker = new DatePicker();
+        toDatePicker.setPromptText("По дату");
+
+        fromDatePicker.setOnAction(event -> {
+            applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
+        });
+
+        toDatePicker.setOnAction(event -> {
+            applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
+        });
+
         VBox root = new VBox(15);
+
+        Button resetFiltersButton = new Button("Сбросить фильтры");
+        resetFiltersButton.setOnAction(event -> {
+            typeFilter.setValue("Все операции");
+            fromDatePicker.setValue(null);
+            toDatePicker.setValue(null);
+            applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
+        });
+
         Button addExpenseButton = new Button("Добавить расход");
 
         addExpenseButton.setOnAction(event ->
@@ -305,19 +324,12 @@ public class FinanceOSApp extends Application {
         );
 
         typeFilter.setOnAction(event -> {
-            String selectedFilter = typeFilter.getValue();
-
-            filteredTransactions.setPredicate(transaction -> {
-                if ("Доходы".equals(selectedFilter)) {
-                    return transaction.getType() == TransactionType.INCOME;
-                }
-
-                if ("Расходы".equals(selectedFilter)) {
-                    return transaction.getType() == TransactionType.EXPENSE;
-                }
-
-                return true;
-            });
+            applyFilters(
+                    filteredTransactions,
+                    typeFilter.getValue(),
+                    fromDatePicker.getValue(),
+                    toDatePicker.getValue()
+            );
         });
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color: #0f172a;");
@@ -329,6 +341,9 @@ public class FinanceOSApp extends Application {
                 addIncomeButton,
                 addExpenseButton,
                 typeFilter,
+                fromDatePicker,
+                toDatePicker,
+                resetFiltersButton,
                 transactionTable,
                 editButton,
                 deleteButton
@@ -344,6 +359,59 @@ public class FinanceOSApp extends Application {
                 )
         );
         stage.show();
+    }
+
+    private boolean matchesDateRange(
+            Transaction transaction,
+            LocalDate from,
+            LocalDate to
+    ) {
+        LocalDate date = transaction.getCreatedAt().toLocalDate();
+
+        if(from!=null && date.isBefore(from)){
+            return false;
+        }
+        if(to!=null && date.isAfter(to)){
+            return false;
+        }
+
+
+
+        return true;
+    }
+
+    private void applyFilters(
+            FilteredList<Transaction> filteredTransactions,
+            String selectedType,
+            LocalDate from,
+            LocalDate to
+    ) {
+        if (from != null && to != null && from.isAfter(to)) {
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+            warning.setTitle("Некорректный период");
+            warning.setHeaderText("Проверьте выбранные даты");
+            warning.setContentText(
+                    "Начальная дата не должна быть позже конечной.\n"
+                            + "Фильтр не применён: в таблице осталась предыдущая выборка."
+            );
+            warning.showAndWait();
+            return;
+        }
+
+        filteredTransactions.setPredicate(transaction -> {
+            if ("Доходы".equals(selectedType)
+                    && transaction.getType() != TransactionType.INCOME) {
+                return false;
+            }
+
+            if ("Расходы".equals(selectedType)
+                    && transaction.getType() != TransactionType.EXPENSE) {
+                return false;
+            }
+
+
+            return matchesDateRange(transaction, from, to);
+        });
     }
 
     private void showTransactionDialog(
