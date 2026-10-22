@@ -78,6 +78,8 @@ public class FinanceOSApp extends Application {
                         "-fx-text-fill: #4ade80;"
         );
 
+
+
         TableView<Transaction> transactionTable = new TableView<>();
 
         ObservableList<Transaction> tableTransactions =
@@ -137,6 +139,18 @@ public class FinanceOSApp extends Application {
                 }
             });
         });
+
+        Label periodIncomeLabel = new Label();
+        Label periodExpensesLabel = new Label();
+
+        periodIncomeLabel.setText(
+                "Доходы за период: "
+                        + calculateIncome(tableTransactions, null, null) + " ₽"
+        );
+        periodExpensesLabel.setText(
+                "Расходы за период: "
+                        + calculateExpenses(tableTransactions, null, null) + " ₽"
+        );
 
         Button deleteButton = new Button("Удалить операцию");
 
@@ -294,13 +308,24 @@ public class FinanceOSApp extends Application {
         DatePicker toDatePicker = new DatePicker();
         toDatePicker.setPromptText("По дату");
 
-        fromDatePicker.setOnAction(event -> {
-            applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
-        });
+        javafx.event.EventHandler<javafx.event.ActionEvent> dateChanged = event -> {
+            applyFilters(
+                    filteredTransactions,
+                    typeFilter.getValue(),
+                    fromDatePicker.getValue(),
+                    toDatePicker.getValue()
+            );
+            updatePeriodTotals(
+                    tableTransactions,
+                    fromDatePicker.getValue(),
+                    toDatePicker.getValue(),
+                    periodIncomeLabel,
+                    periodExpensesLabel
+            );
+        };
 
-        toDatePicker.setOnAction(event -> {
-            applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
-        });
+        fromDatePicker.setOnAction(dateChanged);
+        toDatePicker.setOnAction(dateChanged);
 
         VBox root = new VBox(15);
 
@@ -310,7 +335,25 @@ public class FinanceOSApp extends Application {
             fromDatePicker.setValue(null);
             toDatePicker.setValue(null);
             applyFilters(filteredTransactions,typeFilter.getValue(),fromDatePicker.getValue(),toDatePicker.getValue());
+            updatePeriodTotals(
+                    tableTransactions,
+                    fromDatePicker.getValue(),
+                    toDatePicker.getValue(),
+                    periodIncomeLabel,
+                    periodExpensesLabel
+            );
         });
+
+        tableTransactions.addListener(
+                (javafx.collections.ListChangeListener<Transaction>) change ->
+                        updatePeriodTotals(
+                                tableTransactions,
+                                fromDatePicker.getValue(),
+                                toDatePicker.getValue(),
+                                periodIncomeLabel,
+                                periodExpensesLabel
+                        )
+        );
 
         Button addExpenseButton = new Button("Добавить расход");
 
@@ -378,6 +421,59 @@ public class FinanceOSApp extends Application {
 
 
         return true;
+    }
+
+    private BigDecimal calculateIncome(
+            ObservableList<Transaction> transactions,
+            LocalDate from,
+            LocalDate to
+    ) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            if(transaction.getType() == TransactionType.INCOME && matchesDateRange(transaction,from,to)){
+                total = total.add(transaction.getAmount());
+            }
+        }
+
+        return total;
+    }
+
+    private BigDecimal calculateExpenses(
+            ObservableList<Transaction> transactions,
+            LocalDate from,
+            LocalDate to
+    ) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            if(transaction.getType() == TransactionType.EXPENSE && matchesDateRange(transaction,from,to)){
+                total = total.add(transaction.getAmount());
+            }
+        }
+
+        return total;
+    }
+
+    private void updatePeriodTotals(
+            ObservableList<Transaction> transactions,
+            LocalDate from,
+            LocalDate to,
+            Label incomeLabel,
+            Label expensesLabel
+    ) {
+        if (from != null && to != null && from.isAfter(to)) {
+            return;
+        }
+        incomeLabel.setText(
+                "Доходы за период: "
+                        + calculateIncome(transactions, from, to) + " ₽"
+        );
+
+        expensesLabel.setText(
+                "Расходы за период: "
+                        + calculateExpenses(transactions, from, to) + " ₽"
+        );
     }
 
     private void applyFilters(
