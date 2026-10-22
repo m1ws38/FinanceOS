@@ -231,3 +231,49 @@
     -fx-text-fill: white;
     -fx-padding: 3 12;
 }
+.account-card {
+    -fx-background-color: #172338;
+    -fx-background-radius: 12;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12;
+    -fx-padding: 18;
+}
+
+.account-name {
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.account-balance {
+    -fx-text-fill: #4ade80;
+    -fx-font-size: 16px;
+}
+
+.account-detail {
+    -fx-text-fill: #94a3b8;
+}
+.accounts-panel,
+.forecast-panel {
+    -fx-background-color: #172338;
+    -fx-background-radius: 12;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12;
+    -fx-padding: 20;
+}
+.accounts-panel,
+.forecast-panel {
+    -fx-background-color: #172338;
+    -fx-background-radius: 12;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12;
+    -fx-padding: 20;
+}
+.account-card {
+    -fx-cursor: hand;
+}
+
+.account-card.selected {
+    -fx-border-color: #38bdf8;
+    -fx-border-width: 2;
+}

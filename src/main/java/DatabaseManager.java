@@ -38,10 +38,20 @@ public class DatabaseManager {
                 );
                 """;
 
+        String savingsSql = """
+            CREATE TABLE IF NOT EXISTS savings_accounts (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                balance TEXT NOT NULL,
+                annual_rate TEXT NOT NULL
+        );
+        """;
+
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
 
             statement.executeUpdate(sql);
+            statement.executeUpdate(savingsSql);
 
             System.out.println("Таблица transactions готова!");
 

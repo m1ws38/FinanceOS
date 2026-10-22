@@ -1,4 +1,3 @@
-
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,6 +28,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.CheckBox;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class FinanceOSApp extends Application {
     private static boolean lightTheme = false;
@@ -450,6 +453,197 @@ public class FinanceOSApp extends Application {
         Button backButton = new Button("← К операциям");
         calculatorRoot.getChildren().addAll(backButton, calculatorTitle);
 
+        Button editAccountButton = new Button("Редактировать");
+
+        Label accountsHeading = new Label("Мои счета");
+        accountsHeading.getStyleClass().add("account-name");
+
+        Button addAccountButton = new Button("+ Добавить счёт");
+
+        VBox accountList = new VBox(12);
+
+        SavingsAccountRepository savingsRepository = new SavingsAccountRepository();
+
+        ObjectProperty<SavingsAccount> selectedAccount =
+                new SimpleObjectProperty<>(null);
+
+        ObservableList<SavingsAccount> savingsAccounts =
+                FXCollections.observableArrayList(savingsRepository.findAll());
+
+        for (SavingsAccount account : savingsAccounts) {
+            VBox card = createSavingsCard(account);
+            accountList.getChildren().add(card);
+
+            card.setOnMouseClicked(event ->
+                    selectSavingsAccount(account, card, accountList, selectedAccount)
+            );
+        }
+        Label emptyAccountsLabel = new Label("Пока нет счетов. Добавь первый!");
+        emptyAccountsLabel.getStyleClass().add("account-detail");
+
+        if (savingsAccounts.isEmpty()) {
+            accountList.getChildren().add(emptyAccountsLabel);
+        }
+
+        VBox accountsPanel = new VBox(
+                15, accountsHeading, addAccountButton, accountList
+        );
+        accountsPanel.getStyleClass().add("accounts-panel");
+        accountsPanel.setPrefWidth(340);
+        accountsPanel.setMinWidth(340);
+
+
+        addAccountButton.setOnAction(event -> {
+            new SavingsAccountDialog().show().ifPresent(data -> {
+                SavingsAccount newAccount = savingsRepository.save(data);
+
+                savingsAccounts.add(newAccount);
+
+                VBox newCard = createSavingsCard(newAccount);
+                accountList.getChildren().remove(emptyAccountsLabel);
+                accountList.getChildren().add(newCard);
+
+                newCard.setOnMouseClicked(click ->
+                        selectSavingsAccount(
+                                newAccount, newCard, accountList, selectedAccount
+                        )
+                );
+
+                selectSavingsAccount(
+                        newAccount, newCard, accountList, selectedAccount
+                );
+            });
+        });
+
+        Label forecastHeading = new Label("Выберите счёт");
+        forecastHeading.getStyleClass().add("account-name");
+
+        Label periodLabel = new Label("Период");
+        periodLabel.getStyleClass().add("account-detail");
+
+        TextField periodField = new TextField("12");
+        periodField.setPromptText("Количество месяцев");
+
+        Label topUpLabel = new Label("Пополнение каждый месяц");
+        topUpLabel.getStyleClass().add("account-detail");
+
+        TextField topUpField = new TextField();
+        topUpField.setPromptText("Например: 5000");
+
+        CheckBox capitalizationBox = new CheckBox("С капитализацией");
+        capitalizationBox.setSelected(true);
+
+        Label resultLabel = new Label("Результат появится после расчёта");
+        resultLabel.getStyleClass().add("account-detail");
+
+        Label investedLabel = new Label();
+        investedLabel.getStyleClass().add("account-detail");
+
+        Label earnedLabel = new Label();
+        earnedLabel.getStyleClass().add("account-balance");
+
+
+        selectedAccount.addListener((observable, oldAccount, newAccount) -> {
+            forecastHeading.setText(newAccount.getName());
+            resultLabel.setText("Результат появится после расчёта");
+            investedLabel.setText("");
+            earnedLabel.setText("");
+        });
+
+        if (!savingsAccounts.isEmpty()) {
+            VBox firstCard = (VBox) accountList.getChildren().getFirst();
+
+            selectSavingsAccount(
+                    savingsAccounts.getFirst(),
+                    firstCard,
+                    accountList,
+                    selectedAccount
+            );
+        }
+
+        Label inputErrorLabel = new Label();
+        inputErrorLabel.getStyleClass().add("expense-label");
+
+        Button calculateButton = new Button("Рассчитать");
+        calculateButton.getStyleClass().add("primary");
+        calculateButton.disableProperty().bind(selectedAccount.isNull());
+
+        SavingsCalculator savingsCalculator = new SavingsCalculator();
+
+        calculateButton.setOnAction(event -> {
+            inputErrorLabel.setText("");
+
+            try {
+                int months = Integer.parseInt(periodField.getText().trim());
+
+                String topUpText = topUpField.getText().trim()
+                        .replace(',', '.');
+
+                BigDecimal monthlyTopUp = topUpText.isEmpty()
+                        ? BigDecimal.ZERO
+                        : new BigDecimal(topUpText);
+
+                if (months <= 0 || monthlyTopUp.signum() < 0) {
+                    inputErrorLabel.setText(
+                            "Период должен быть больше нуля, а пополнение — неотрицательным"
+                    );
+                    return;
+                }
+
+                BigDecimal finalAmount = savingsCalculator.calculateFinalAmount(
+
+                        selectedAccount.get().getBalance(),
+                        selectedAccount.get().getAnnualRate(),
+                        months,
+                        monthlyTopUp,
+                        capitalizationBox.isSelected()
+
+
+                );
+
+                BigDecimal invested = selectedAccount.get().getBalance()
+                        .add(monthlyTopUp.multiply(BigDecimal.valueOf(months)));
+
+                BigDecimal earned = finalAmount.subtract(invested);
+
+                investedLabel.setText("Вложено: " + invested.toPlainString() + " ₽");
+                earnedLabel.setText("Проценты: " + earned.toPlainString() + " ₽");
+
+                resultLabel.setText(
+                        "Через " + months + " мес.: "
+                                + finalAmount.toPlainString() + " ₽"
+                );
+            } catch (NumberFormatException e) {
+                inputErrorLabel.setText(
+                        "Введите целое число месяцев и корректную сумму пополнения"
+                );
+            }
+        });
+
+        VBox forecastPanel = new VBox(
+                15,
+                forecastHeading,
+                editAccountButton,
+                periodLabel,
+                periodField,
+                topUpLabel,
+                topUpField,
+                capitalizationBox,
+                calculateButton,
+                inputErrorLabel,
+                resultLabel,
+                investedLabel,
+                earnedLabel
+        );
+        forecastPanel.getStyleClass().add("forecast-panel");
+        forecastPanel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(forecastPanel, Priority.ALWAYS);
+
+        HBox calculatorContent = new HBox(20, accountsPanel, forecastPanel);
+        VBox.setVgrow(calculatorContent, Priority.ALWAYS);
+
+        calculatorRoot.getChildren().add(calculatorContent);
+
         Scene calculatorScene = new Scene(calculatorRoot, 1000, 650);
 
 
@@ -497,6 +691,40 @@ public class FinanceOSApp extends Application {
         });
 
         stage.show();
+    }
+
+    private VBox createSavingsCard(SavingsAccount account) {
+        Label name = new Label(account.getName());
+        name.getStyleClass().add("account-name");
+
+        Label balance = new Label(
+                "На счёте: " + account.getBalance() + " ₽"
+        );
+        balance.getStyleClass().add("account-balance");
+
+        Label rate = new Label(
+                "Ставка: " + account.getAnnualRate() + "% годовых"
+        );
+        rate.getStyleClass().add("account-detail");
+
+        VBox card = new VBox(8, name, balance, rate);
+        card.getStyleClass().add("account-card");
+        card.setMaxWidth(Double.MAX_VALUE);
+        return card;
+    }
+
+    private void selectSavingsAccount(
+            SavingsAccount account,
+            VBox card,
+            VBox accountList,
+            ObjectProperty<SavingsAccount> selectedAccount
+    ) {
+        for (javafx.scene.Node node : accountList.getChildren()) {
+            node.getStyleClass().remove("selected");
+        }
+
+        card.getStyleClass().add("selected");
+        selectedAccount.set(account);
     }
 
     public static void applyDialogTheme(DialogPane pane) {

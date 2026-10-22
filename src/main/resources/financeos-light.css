@@ -171,3 +171,27 @@
 .dialog-pane .text-field:focused {
     -fx-border-color: #0284c7;
 }
+.account-card {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+}
+
+.account-name {
+    -fx-text-fill: #172338;
+}
+
+.account-balance {
+    -fx-text-fill: #15803d;
+}
+
+.account-detail {
+    -fx-text-fill: #64748b;
+}
+.accounts-panel,
+.forecast-panel {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+}
+.account-card.selected {
+    -fx-border-color: #0284c7;
+}
