@@ -394,6 +394,24 @@ public class FinanceOSApp extends Application {
 
         Scene scene = new Scene(root, 800, 500);
 
+        VBox calculatorRoot = new VBox(15);
+        calculatorRoot.setAlignment(Pos.TOP_CENTER);
+        calculatorRoot.setStyle("-fx-background-color: #0f172a; -fx-padding: 20;");
+
+        Label calculatorTitle = new Label("Вклады и накопительные счета");
+        calculatorTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: white;");
+
+        Button backButton = new Button("← К операциям");
+        calculatorRoot.getChildren().addAll(backButton, calculatorTitle);
+
+        Scene calculatorScene = new Scene(calculatorRoot, 800, 500);
+
+        Button openCalculatorButton = new Button("Мои накопления");
+        root.getChildren().add(openCalculatorButton);
+
+        openCalculatorButton.setOnAction(event -> stage.setScene(calculatorScene));
+        backButton.setOnAction(event -> stage.setScene(scene));
+
         stage.setTitle("FinanceOS");
         stage.setScene(scene);
         stage.getIcons().add(
