@@ -24,6 +24,9 @@ import javafx.collections.transformation.SortedList;
 import javafx.scene.image.Image;
 import javafx.scene.control.DatePicker;
 import java.time.LocalDate;
+import javafx.geometry.Insets;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 
 public class FinanceOSApp extends Application {
 
@@ -375,42 +378,82 @@ public class FinanceOSApp extends Application {
             );
         });
         root.setAlignment(Pos.CENTER);
+        root.setAlignment(Pos.TOP_LEFT);
+        root.setPadding(new Insets(20));
         root.setStyle("-fx-background-color: #0f172a;");
 
-        root.getChildren().addAll(
-                title,
-                subtitle,
-                balanceLabel,
-                addIncomeButton,
-                addExpenseButton,
+        Button openCalculatorButton = new Button("Мои накопления");
+
+        VBox heading = new VBox(4, title, subtitle);
+
+        HBox header = new HBox(20, heading, openCalculatorButton);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        balanceLabel.setStyle(
+                "-fx-font-size: 24px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #4ade80;"
+        );
+
+        HBox addButtons = new HBox(10, addIncomeButton, addExpenseButton);
+        addButtons.setAlignment(Pos.CENTER_LEFT);
+
+        HBox filters = new HBox(
+                10,
                 typeFilter,
                 fromDatePicker,
                 toDatePicker,
-                resetFiltersButton,
+                resetFiltersButton
+        );
+        filters.setAlignment(Pos.CENTER_LEFT);
+
+        HBox periodTotals = new HBox(30, periodIncomeLabel, periodExpensesLabel);
+        periodTotals.setStyle("-fx-text-fill: white;");
+        periodIncomeLabel.setStyle("-fx-text-fill: #4ade80;");
+        periodExpensesLabel.setStyle("-fx-text-fill: #fb7185;");
+
+        HBox tableActions = new HBox(10, editButton, deleteButton);
+        tableActions.setAlignment(Pos.CENTER_LEFT);
+
+        transactionTable.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN
+        );
+        VBox.setVgrow(transactionTable, Priority.ALWAYS);
+
+        root.getChildren().addAll(
+                header,
+                balanceLabel,
+                addButtons,
+                filters,
                 transactionTable,
-                editButton,
-                deleteButton
+                periodTotals,
+                tableActions
         );
 
-        Scene scene = new Scene(root, 800, 500);
+        Scene scene = new Scene(root, 1000, 650);
 
         VBox calculatorRoot = new VBox(15);
         calculatorRoot.setAlignment(Pos.TOP_CENTER);
-        calculatorRoot.setStyle("-fx-background-color: #0f172a; -fx-padding: 20;");
+        calculatorRoot.setStyle(
+                "-fx-background-color: #0f172a; -fx-padding: 20;"
+        );
 
         Label calculatorTitle = new Label("Вклады и накопительные счета");
-        calculatorTitle.setStyle("-fx-font-size: 24px; -fx-text-fill: white;");
+        calculatorTitle.setStyle(
+                "-fx-font-size: 24px; -fx-text-fill: white;"
+        );
 
         Button backButton = new Button("← К операциям");
         calculatorRoot.getChildren().addAll(backButton, calculatorTitle);
 
-        Scene calculatorScene = new Scene(calculatorRoot, 800, 500);
+        Scene calculatorScene = new Scene(calculatorRoot, 1000, 650);
 
-        Button openCalculatorButton = new Button("Мои накопления");
-        root.getChildren().add(openCalculatorButton);
-
-        openCalculatorButton.setOnAction(event -> stage.setScene(calculatorScene));
-        backButton.setOnAction(event -> stage.setScene(scene));
+        openCalculatorButton.setOnAction(
+                event -> stage.setScene(calculatorScene)
+        );
+        backButton.setOnAction(
+                event -> stage.setScene(scene)
+        );
 
         stage.setTitle("FinanceOS");
         stage.setScene(scene);
