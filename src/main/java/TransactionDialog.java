@@ -46,6 +46,9 @@ public class TransactionDialog {
     }
     public Optional<TransactionFormData> show() {
         Dialog<ButtonType> dialog = new Dialog<>();
+        FinanceOSApp.applyDialogTheme(dialog.getDialogPane());
+
+        dialog.getDialogPane().getStyleClass().add("transaction-dialog");
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: #ef4444;");
 
@@ -94,6 +97,9 @@ public class TransactionDialog {
                 errorLabel.setText("Введите корректную сумму!");
                 event.consume();
             }
+            okButton.getStyleClass().add(
+                    type == TransactionType.INCOME ? "primary" : "expense"
+            );
         });
 
         grid.add(errorLabel, 1, 3);

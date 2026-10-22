@@ -1,0 +1,233 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #0f172a;
+}
+
+.button {
+    -fx-background-color: #25344f;
+    -fx-text-fill: #e2e8f0;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 9 14;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #344766;
+}
+
+.button:pressed {
+    -fx-background-color: #1b2940;
+}
+
+.button.primary {
+    -fx-background-color: #22c55e;
+    -fx-text-fill: #071a10;
+    -fx-font-weight: bold;
+}
+
+.button.primary:hover {
+    -fx-background-color: #4ade80;
+}
+
+.button.danger {
+    -fx-background-color: #472838;
+    -fx-text-fill: #fda4af;
+}
+
+.button.danger:hover {
+    -fx-background-color: #663044;
+}
+
+.combo-box, .date-picker {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-height: 36;
+}
+
+.combo-box .list-cell,
+.date-picker .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+}
+
+.combo-box .arrow,
+.date-picker .arrow {
+    -fx-background-color: #cbd5e1;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: #334155;
+    -fx-background-radius: 0 8 8 0;
+}
+
+.table-view {
+    -fx-background-color: #172338;
+    -fx-border-color: #334155;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 1;
+}
+
+.table-view .column-header-background,
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: #1e293b;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #cbd5e1;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.table-row-cell {
+    -fx-background-color: #172338;
+    -fx-cell-size: 38px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #1b2940;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #293c59;
+}
+
+.table-row-cell:selected,
+.table-row-cell:odd:selected {
+    -fx-background-color: #315b77;
+}
+
+.table-cell {
+    -fx-text-fill: #e2e8f0;
+    -fx-border-color: transparent;
+    -fx-padding: 0 10;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: #94a3b8;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 4;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+    -fx-padding: 9 12;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #334155;
+    -fx-background-radius: 6;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #315b77;
+    -fx-background-radius: 6;
+}
+
+.button.expense {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: #2b0b0b;
+    -fx-font-weight: bold;
+}
+
+.button.expense:hover {
+    -fx-background-color: #f87171;
+}
+
+.transaction-dialog {
+    -fx-background-color: #0f172a;
+    -fx-padding: 12;
+}
+
+.transaction-dialog .header-panel {
+    -fx-background-color: #172338;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+}
+
+.transaction-dialog .header-panel .label {
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.transaction-dialog .content,
+.transaction-dialog .content .label {
+    -fx-text-fill: #cbd5e1;
+}
+
+.transaction-dialog .text-field {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-background-radius: 8;
+    -fx-border-color: #334155;
+    -fx-border-radius: 8;
+    -fx-padding: 8 10;
+    -fx-pref-width: 230;
+}
+
+.transaction-dialog .text-field:focused {
+    -fx-border-color: #38bdf8;
+}
+
+.transaction-dialog .button-bar {
+    -fx-background-color: transparent;
+}
+
+.confirmation-dialog {
+    -fx-background-color: #0f172a;
+}
+
+.confirmation-dialog .header-panel {
+    -fx-background-color: #172338;
+}
+
+.confirmation-dialog .header-panel .label {
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.confirmation-dialog .content.label {
+    -fx-text-fill: #cbd5e1;
+}
+.app-title {
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+
+.app-subtitle {
+    -fx-text-fill: #94a3b8;
+}
+
+.balance-label {
+    -fx-text-fill: #4ade80;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.income-label {
+    -fx-text-fill: #4ade80;
+}
+
+.expense-label {
+    -fx-text-fill: #fb7185;
+}
+
+.button.theme-toggle {
+    -fx-font-size: 22px;
+    -fx-text-fill: white;
+    -fx-padding: 3 12;
+}

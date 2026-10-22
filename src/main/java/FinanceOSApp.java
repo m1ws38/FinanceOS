@@ -27,8 +27,11 @@ import java.time.LocalDate;
 import javafx.geometry.Insets;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.control.DialogPane;
 
 public class FinanceOSApp extends Application {
+    private static boolean lightTheme = false;
 
     @Override
     public void start(Stage stage) {
@@ -63,14 +66,11 @@ public class FinanceOSApp extends Application {
 
 
         Label title = new Label("FinanceOS");
-        title.setStyle(
-                "-fx-font-size: 32px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-text-fill: white;"
-        );
+        title.getStyleClass().add("app-title");
 
         Label subtitle = new Label("Твой финансовый менеджер");
-        subtitle.setStyle("-fx-text-fill: #94a3b8;");
+        subtitle.getStyleClass().add("app-subtitle");
+
 
         Label balanceLabel = new Label(
                 "Текущий баланс: " + service.getBalance() + " ₽"
@@ -174,6 +174,11 @@ public class FinanceOSApp extends Application {
                             + selected.getAmount().toPlainString()
                             + " ₽"
             );
+
+            confirmation.setGraphic(null);
+
+            applyDialogTheme(confirmation.getDialogPane());
+            confirmation.getDialogPane().getStyleClass().add("confirmation-dialog");
 
             ButtonType answer = confirmation.showAndWait()
                     .orElse(ButtonType.CANCEL);
@@ -359,6 +364,7 @@ public class FinanceOSApp extends Application {
         );
 
         Button addExpenseButton = new Button("Добавить расход");
+        addExpenseButton.getStyleClass().add("expense");
 
         addExpenseButton.setOnAction(event ->
                 showTransactionDialog(
@@ -380,20 +386,23 @@ public class FinanceOSApp extends Application {
         root.setAlignment(Pos.CENTER);
         root.setAlignment(Pos.TOP_LEFT);
         root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #0f172a;");
 
         Button openCalculatorButton = new Button("Мои накопления");
 
         VBox heading = new VBox(4, title, subtitle);
 
-        HBox header = new HBox(20, heading, openCalculatorButton);
+        Button themeButton = new Button("☾");
+        themeButton.getStyleClass().add("theme-toggle");
+
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+
+        HBox header = new HBox(
+                20, heading, openCalculatorButton, headerSpacer, themeButton
+        );
         header.setAlignment(Pos.CENTER_LEFT);
 
-        balanceLabel.setStyle(
-                "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-text-fill: #4ade80;"
-        );
+        balanceLabel.getStyleClass().add("balance-label");
 
         HBox addButtons = new HBox(10, addIncomeButton, addExpenseButton);
         addButtons.setAlignment(Pos.CENTER_LEFT);
@@ -408,9 +417,8 @@ public class FinanceOSApp extends Application {
         filters.setAlignment(Pos.CENTER_LEFT);
 
         HBox periodTotals = new HBox(30, periodIncomeLabel, periodExpensesLabel);
-        periodTotals.setStyle("-fx-text-fill: white;");
-        periodIncomeLabel.setStyle("-fx-text-fill: #4ade80;");
-        periodExpensesLabel.setStyle("-fx-text-fill: #fb7185;");
+        periodIncomeLabel.getStyleClass().add("income-label");
+        periodExpensesLabel.getStyleClass().add("expense-label");
 
         HBox tableActions = new HBox(10, editButton, deleteButton);
         tableActions.setAlignment(Pos.CENTER_LEFT);
@@ -434,19 +442,17 @@ public class FinanceOSApp extends Application {
 
         VBox calculatorRoot = new VBox(15);
         calculatorRoot.setAlignment(Pos.TOP_CENTER);
-        calculatorRoot.setStyle(
-                "-fx-background-color: #0f172a; -fx-padding: 20;"
-        );
+        calculatorRoot.setPadding(new Insets(20));
 
         Label calculatorTitle = new Label("Вклады и накопительные счета");
-        calculatorTitle.setStyle(
-                "-fx-font-size: 24px; -fx-text-fill: white;"
-        );
+        calculatorTitle.getStyleClass().add("app-title");
 
         Button backButton = new Button("← К операциям");
         calculatorRoot.getChildren().addAll(backButton, calculatorTitle);
 
         Scene calculatorScene = new Scene(calculatorRoot, 1000, 650);
+
+
 
         openCalculatorButton.setOnAction(
                 event -> stage.setScene(calculatorScene)
@@ -462,7 +468,51 @@ public class FinanceOSApp extends Application {
                         FinanceOSApp.class.getResourceAsStream("/financeos.png")
                 )
         );
+        addIncomeButton.getStyleClass().add("primary");
+        deleteButton.getStyleClass().add("danger");
+
+        String stylesheet = FinanceOSApp.class
+                .getResource("/financeos.css")
+                .toExternalForm();
+
+        scene.getStylesheets().add(stylesheet);
+        calculatorScene.getStylesheets().add(stylesheet);
+
+        String lightStylesheet = FinanceOSApp.class
+                .getResource("/financeos-light.css")
+                .toExternalForm();
+
+        themeButton.setOnAction(event -> {
+            if (scene.getStylesheets().contains(lightStylesheet)) {
+                lightTheme = false;
+                scene.getStylesheets().remove(lightStylesheet);
+                calculatorScene.getStylesheets().remove(lightStylesheet);
+                themeButton.setText("☾");
+            } else {
+                lightTheme = true;
+                scene.getStylesheets().add(lightStylesheet);
+                calculatorScene.getStylesheets().add(lightStylesheet);
+                themeButton.setText("☀");
+            }
+        });
+
         stage.show();
+    }
+
+    public static void applyDialogTheme(DialogPane pane) {
+        pane.getStylesheets().add(
+                FinanceOSApp.class
+                        .getResource("/financeos.css")
+                        .toExternalForm()
+        );
+
+        if (lightTheme) {
+            pane.getStylesheets().add(
+                    FinanceOSApp.class
+                            .getResource("/financeos-light.css")
+                            .toExternalForm()
+            );
+        }
     }
 
     private boolean matchesDateRange(
